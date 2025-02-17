@@ -11,54 +11,20 @@ import useSearch from "../../hook/useSearch";
 import InvoiceCard from "../../components/invoiceCards";
 import SearchBar from "../../components/Search";
 
-const sampleInvoices: InvoiceCardProps[] = [
-  {
-    clientName: "Alaa Mousa",
-    clientEmail: "alaamousa@example.com",
-    invoiceNumber: "INV-001",
-    date: "2025-02-01",
-    totalAmount: 1500,
-    status: "UnPaid",
-    onDelete: () => {},
-    onEdit: () => {},
-  },
-  {
-    clientName: "Alaa Mousa",
-    clientEmail: "alaamousa@example.com",
-    invoiceNumber: "INV-0091",
-    date: "2025-02-01",
-    totalAmount: 1500,
-    status: "UnPaid",
-    onDelete: () => {},
-    onEdit: () => {},
-  },
-  {
-    clientName: "Yazeed Sleat",
-    clientEmail: "yazeedSleat@example.com",
-    invoiceNumber: "INV-002",
-    date: "2025-02-05",
-    totalAmount: 2500,
-    status: "Paid",
-    onDelete: () => {},
-    onEdit: () => {},
-  },
-  {
-    clientName: "Mohammad Khalili",
-    clientEmail: "mohammad@example.com",
-    invoiceNumber: "INV-003",
-    date: "2025-02-08",
-    totalAmount: 3000,
-    status: "Paid",
-    onDelete: () => {},
-    onEdit: () => {},
-  },
-];
-
 const CardList: React.FC = () => {
   const navigate = useNavigate();
   const [showFilter, setShowFilter] = useState(false);
+
+  const getSavedInvoices = (): InvoiceCardProps[] => {
+    const savedInvoices = localStorage.getItem("savedInvoice");
+    return savedInvoices ? JSON.parse(savedInvoices) : [];
+  };
+
   const [invoiceList, setInvoiceList] =
-    useState<InvoiceCardProps[]>(sampleInvoices);
+    useState<InvoiceCardProps[]>(getSavedInvoices);
+  const [mainInvoiceList, setMainInvoiceList] =
+    useState<InvoiceCardProps[]>(getSavedInvoices);
+  console.log(invoiceList);
 
   const {
     invoiceListDelte,
@@ -68,10 +34,7 @@ const CardList: React.FC = () => {
     showConfirmDelete,
   } = useDelete(invoiceList);
 
-  const [mainInvoiceList, setMainInvoiceList] =
-    useState<InvoiceCardProps[]>(sampleInvoices);
-
-    const {
+  const {
     filterType,
     setFilterType,
     filterValue,
@@ -81,9 +44,11 @@ const CardList: React.FC = () => {
     filteredInvoices,
     applyFilter,
   } = useInvoiceFilter(mainInvoiceList);
+
   const { searchQuery, setSearchQuery, searchResults, search } =
     useSearch(mainInvoiceList);
-  const handleCreateInvoie = () => {
+
+  const handleCreateInvoice = () => {
     navigate("/CreateInvoice");
   };
 
@@ -104,6 +69,7 @@ const CardList: React.FC = () => {
   useEffect(() => {
     setInvoiceList(filteredInvoices);
   }, [filteredInvoices]);
+
   useEffect(() => {
     setInvoiceList(searchResults);
   }, [searchResults]);
@@ -117,7 +83,7 @@ const CardList: React.FC = () => {
           search={search}
         />
         <div className="buttons">
-          <button className="create-invoice" onClick={handleCreateInvoie}>
+          <button className="create-invoice" onClick={handleCreateInvoice}>
             <FaFileInvoice className="icon" /> Create Invoice
           </button>
           <button className="filter" onClick={() => setShowFilter(!showFilter)}>
@@ -158,10 +124,10 @@ const CardList: React.FC = () => {
         <div className="cards-container">
           {invoiceList.map((invoice) => (
             <InvoiceCard
-              key={invoice.invoiceNumber}
+              key={invoice.invoiceId} 
               {...invoice}
               onDelete={() => handleDeleteInvoice(invoice)}
-              onEdit={() => handleCreateInvoie()}
+              onEdit={() => handleCreateInvoice()}
             />
           ))}
         </div>

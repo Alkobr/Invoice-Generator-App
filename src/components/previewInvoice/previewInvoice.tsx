@@ -64,12 +64,12 @@ const PreviewInvoice = (props: IPreview) => {
               </tr>
             ))}
           </tbody>
-          <br />
+          
           <tfoot>
             <tr>
               <td colSpan={4} className="result"></td>
             </tr>
-            <br />
+        
 
             <tr>
               <td colSpan={2}></td>

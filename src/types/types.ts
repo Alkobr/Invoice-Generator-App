@@ -16,6 +16,7 @@ export type IInvoice = {
   subTotal:number;
   discount:number;
   tax:number;
+  client: IClient;
 };
 
 export type IUser = {
@@ -34,7 +35,8 @@ export type Action =
   | { type: "LOGIN"; payload: IUser }
   | { type: "LOGOUT" }
   | { type: "ADD_INVOICE"; payload: IInvoice }
-  | { type: "SET_CURRENT_INVOICE"; payload: IInvoice | null };
+  | { type: "SET_CURRENT_INVOICE"; payload: IInvoice | null }
+  | { type: "UPDATE_INVOICE"; payload: IInvoice };
 
 export type InputFieldProps = {
   type: string;
@@ -102,11 +104,10 @@ export interface IButton {
   className?: string;
 }
 export interface InvoiceCardProps {
-  clientName: string;
-  clientEmail: string;
-  invoiceNumber: string;
-  date: string;
-  totalAmount: number;
+  client: IClient;
+  invoiceId: string;
+  dueDate: string;
+  subTotal: number;
   status: string;
   profileImage?: string;
   onDelete: () => void;
