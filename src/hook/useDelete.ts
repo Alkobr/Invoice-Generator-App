@@ -2,11 +2,11 @@ import { useState } from "react";
 import { InvoiceCardProps } from "../types";
 
 const useDelete = (initialInvoices: InvoiceCardProps[]) => {
-  const [invoiceListDelte, setInvoiceList] = useState(initialInvoices);
+  const [invoiceListDelete, setInvoiceList] = useState(initialInvoices);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const [invoiceToDelete, setInvoiceToDelete] =
-    useState<InvoiceCardProps | null>(null);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<InvoiceCardProps | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
+
   const handleDelete = (invoice: InvoiceCardProps) => {
     setInvoiceToDelete(invoice);
     setShowConfirmDelete(true);
@@ -14,14 +14,18 @@ const useDelete = (initialInvoices: InvoiceCardProps[]) => {
 
   const confirmDelete = () => {
     if (invoiceToDelete) {
-      setInvoiceList(
-        invoiceListDelte.filter(
-          (i) => i.invoiceNumber !== invoiceToDelete.invoiceNumber
-        )
+      const updatedInvoices = invoiceListDelete.filter(
+        (i) => i.invoiceId !== invoiceToDelete.invoiceId
       );
+      
+      // Update state
+      setInvoiceList(updatedInvoices);
       setShowConfirmDelete(false);
       setInvoiceToDelete(null);
       setIsConfirmed(true);
+
+      // Update localStorage
+      localStorage.setItem("savedInvoice", JSON.stringify(updatedInvoices));
     }
   };
 
@@ -32,7 +36,7 @@ const useDelete = (initialInvoices: InvoiceCardProps[]) => {
   };
 
   return {
-    invoiceListDelte,
+    invoiceListDelete,
     handleDelete,
     confirmDelete,
     cancelDelete,

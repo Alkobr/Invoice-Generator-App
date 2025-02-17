@@ -270,9 +270,9 @@ select.input-field {
   display: flex;
   margin-top: 60px;
   margin-left: 120px;
-  width: 100%;
+
 }
-.buttons{
+.buttonsCreate{
   display: flex;
   flex-direction: column;
 }
@@ -284,7 +284,7 @@ select.input-field {
   margin-bottom: 1rem;
 }
 
-.CalculateDivMain {
+.CalculateDivMainCreate {
   display: flex;
   flex-direction: row;
   width: 100%;

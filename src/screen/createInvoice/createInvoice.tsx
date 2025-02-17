@@ -283,7 +283,7 @@ const CreateInvoice = () => {
             onAddItem={addItem}
             onRemoveItem={removeItem}
           />
-          <div className="CalculateDivMain">
+          <div className="CalculateDivMainCreate">
             <div></div>
             <div className="CalculateDiv">
               <div className="subTotalDiv">
@@ -340,7 +340,7 @@ const CreateInvoice = () => {
           </div>
         </div>
       </div>
-      <div className="buttons">
+      <div className="buttonsCreate">
         <div className="hidden" ref={previewRef}>
           <PreviewInvoice
             user={user}

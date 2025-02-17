@@ -26,6 +26,7 @@ const SignUp = () => {
     password: "",
     phone: "",
     address: "",
+    invoices:[]
   });
 
   const [errors, setErrors] = useState<Partial<IUser>>({});

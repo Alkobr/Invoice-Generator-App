@@ -20,14 +20,13 @@ const CardList: React.FC = () => {
     return savedInvoices ? JSON.parse(savedInvoices) : [];
   };
 
-  const [invoiceList, setInvoiceList] =
-    useState<InvoiceCardProps[]>(getSavedInvoices);
   const [mainInvoiceList, setMainInvoiceList] =
     useState<InvoiceCardProps[]>(getSavedInvoices);
-  console.log(invoiceList);
+  const [invoiceList, setInvoiceList] =
+    useState<InvoiceCardProps[]>(mainInvoiceList);
 
   const {
-    invoiceListDelte,
+    invoiceListDelete: invoiceListDelete,
     handleDelete,
     confirmDelete,
     cancelDelete,
@@ -48,6 +47,19 @@ const CardList: React.FC = () => {
   const { searchQuery, setSearchQuery, searchResults, search } =
     useSearch(mainInvoiceList);
 
+  useEffect(() => {
+    setInvoiceList(invoiceListDelete);
+    setMainInvoiceList(invoiceListDelete);
+  }, [invoiceListDelete]);
+
+  useEffect(() => {
+    setInvoiceList(filteredInvoices);
+  }, [filteredInvoices]);
+
+  useEffect(() => {
+    setInvoiceList(searchQuery.trim() ? searchResults : mainInvoiceList);
+  }, [searchResults, searchQuery, mainInvoiceList]);
+
   const handleCreateInvoice = () => {
     navigate("/CreateInvoice");
   };
@@ -60,19 +72,6 @@ const CardList: React.FC = () => {
   const handleDeleteInvoice = (invoice: InvoiceCardProps) => {
     handleDelete(invoice);
   };
-
-  useEffect(() => {
-    setInvoiceList(invoiceListDelte);
-    setMainInvoiceList(invoiceListDelte);
-  }, [invoiceListDelte]);
-
-  useEffect(() => {
-    setInvoiceList(filteredInvoices);
-  }, [filteredInvoices]);
-
-  useEffect(() => {
-    setInvoiceList(searchResults);
-  }, [searchResults]);
 
   return (
     <div className="AllInvoices">
@@ -124,10 +123,10 @@ const CardList: React.FC = () => {
         <div className="cards-container">
           {invoiceList.map((invoice) => (
             <InvoiceCard
-              key={invoice.invoiceId} 
+              key={invoice.invoiceId}
               {...invoice}
               onDelete={() => handleDeleteInvoice(invoice)}
-              onEdit={() => handleCreateInvoice()}
+              onEdit={handleCreateInvoice}
             />
           ))}
         </div>
