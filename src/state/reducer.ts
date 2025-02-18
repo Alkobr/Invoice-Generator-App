@@ -1,6 +1,6 @@
 import { Action, IState } from "../types";
 
-const reducer = (state: IState, action: Action): IState => {
+const reducer = (state:IState, action:Action) => {
   switch (action.type) {
     case "STORE_LOCAL_STORAGE":
       return { ...state, users: action.payload };
@@ -11,8 +11,17 @@ const reducer = (state: IState, action: Action): IState => {
     case "LOGIN":
       return { ...state, loggedInUser: action.payload };
 
-    case "LOGOUT":
-      return { ...state, loggedInUser: null };
+    case "LOGOUT": {
+      if (!state.loggedInUser) return state;
+      
+      const updatedUsers = state.users.map(user =>
+        user.email === state.loggedInUser?.email
+          ? { ...user, invoices: [...user.invoices, ...(state.loggedInUser.invoices || [])] }
+          : user
+      );
+      
+      return { ...state, loggedInUser: null, users: updatedUsers };
+    }
 
     case "ADD_INVOICE": {
       if (!state.loggedInUser) return state;
@@ -38,7 +47,7 @@ const reducer = (state: IState, action: Action): IState => {
     case "UPDATE_INVOICE": {
       if (!state.loggedInUser || !state.loggedInUser.invoices) return state;
     
-      const updatedInvoices = state.loggedInUser.invoices.map((invoice) =>
+      const updatedInvoices = state.loggedInUser.invoices.map(invoice =>
         invoice.invoiceId === action.payload.invoiceId ? action.payload : invoice
       );
     
@@ -47,7 +56,6 @@ const reducer = (state: IState, action: Action): IState => {
         loggedInUser: { ...state.loggedInUser, invoices: updatedInvoices },
       };
     }
-    
 
     default:
       return state;

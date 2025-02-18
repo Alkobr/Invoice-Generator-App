@@ -8,7 +8,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import OrderTable from "../../components/Table";
 import { useUserContext } from "../../provider";
-import { IClient, IInvoice, TableRow } from "../../types";
+import { IClient, IInvoice, IUser, TableRow } from "../../types";
 import Save from "../../assets/Save.png"
 const CreateInvoice = () => {
   const previewRef = useRef<HTMLDivElement>(null);
@@ -96,19 +96,37 @@ const CreateInvoice = () => {
       items: listItems,
       client: clientDetails,
     };
-
-    const storedInvoices = localStorage.getItem("savedInvoice");
-    const existingInvoices = storedInvoices ? JSON.parse(storedInvoices) : [];
-
-    const updatedInvoices = Array.isArray(existingInvoices)
-      ? [...existingInvoices, newInvoice]
+  
+    
+    const storedUser = localStorage.getItem("loggedInUser");
+    const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
+  
+    if (!loggedInUser) {
+      console.error("No logged-in user found");
+      return;
+    }
+  
+    
+    const storedUsers = localStorage.getItem("users");
+    let users = storedUsers ? JSON.parse(storedUsers) : [];
+  
+    
+    loggedInUser.invoices = Array.isArray(loggedInUser.invoices)
+      ? [...loggedInUser.invoices, newInvoice]
       : [newInvoice];
-
-    localStorage.setItem("savedInvoice", JSON.stringify(updatedInvoices));
-
+  
+    
+    users = users.map((user:IUser) => user.email === loggedInUser.email ? loggedInUser : user);
+  
+    
+    localStorage.setItem("users", JSON.stringify(users));
+    localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
+  
+    
     dispatch({ type: "ADD_INVOICE", payload: newInvoice });
     dispatch({ type: "SET_CURRENT_INVOICE", payload: newInvoice });
   };
+
 
   const handlePreview = () => {
     setIsOpen(true);

@@ -15,7 +15,6 @@ import Logo from "../../assets/PayInvo.png";
 import { IUser } from "../../types";
 import { useUserContext } from "../../provider";
 
-
 const SignUp = () => {
   const { state, dispatch } = useUserContext();
   const navigate = useNavigate();
@@ -26,7 +25,7 @@ const SignUp = () => {
     password: "",
     phone: "",
     address: "",
-    invoices:[]
+    invoices: [],
   });
 
   const [errors, setErrors] = useState<Partial<IUser>>({});
@@ -52,8 +51,9 @@ const SignUp = () => {
         return;
       }
 
-      dispatch({ type: "ADD_USER", payload: formData });
-      dispatch({ type: "LOGIN", payload: formData });
+      const newUser = { ...formData, invoices: [] };
+      dispatch({ type: "ADD_USER", payload: newUser });
+      dispatch({ type: "LOGIN", payload: newUser });
       navigate("/CreateInvoice");
     }
   };

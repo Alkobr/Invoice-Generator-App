@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { InvoiceCardProps } from "../../types";
+import { IInvoice, InvoiceCardProps } from "../../types";
 import "./invoiceList.css";
 import { FaFileInvoice, FaFilter } from "react-icons/fa";
 import FilterModal from "../../components/filterModals";
@@ -16,22 +16,26 @@ const CardList: React.FC = () => {
   const [showFilter, setShowFilter] = useState(false);
 
   const getSavedInvoices = (): InvoiceCardProps[] => {
-    const savedInvoices = localStorage.getItem("savedInvoice");
-    return savedInvoices ? JSON.parse(savedInvoices) : [];
+    const savedInvoices = localStorage.getItem("loggedInUser");
+    const existingInvoices = savedInvoices ? JSON.parse(savedInvoices) : [];
+    const existingInvoicesValue = existingInvoices?.invoices?.map((invoice:IInvoice) => ({
+      ...invoice,
+      
+    })) || [];
+    return existingInvoicesValue;
   };
 
-  const [mainInvoiceList, setMainInvoiceList] =
-    useState<InvoiceCardProps[]>(getSavedInvoices);
-  const [invoiceList, setInvoiceList] =
-    useState<InvoiceCardProps[]>(mainInvoiceList);
+  const [mainInvoiceList, setMainInvoiceList] = useState<InvoiceCardProps[]>(getSavedInvoices);
+  const [invoiceList, setInvoiceList] = useState<InvoiceCardProps[]>(mainInvoiceList);
 
   const {
-    invoiceListDelete: invoiceListDelete,
+    invoiceListDelete,
     handleDelete,
     confirmDelete,
     cancelDelete,
     showConfirmDelete,
   } = useDelete(invoiceList);
+console.log(mainInvoiceList);
 
   const {
     filterType,
@@ -44,8 +48,7 @@ const CardList: React.FC = () => {
     applyFilter,
   } = useInvoiceFilter(mainInvoiceList);
 
-  const { searchQuery, setSearchQuery, searchResults, search } =
-    useSearch(mainInvoiceList);
+  const { searchQuery, setSearchQuery, searchResults, search } = useSearch(mainInvoiceList);
 
   useEffect(() => {
     setInvoiceList(invoiceListDelete);
@@ -76,11 +79,7 @@ const CardList: React.FC = () => {
   return (
     <div className="AllInvoices">
       <div className="containerr">
-        <SearchBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          search={search}
-        />
+        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} search={search} />
         <div className="buttons">
           <button className="create-invoice" onClick={handleCreateInvoice}>
             <FaFileInvoice className="icon" /> Create Invoice
@@ -104,12 +103,7 @@ const CardList: React.FC = () => {
         />
       )}
 
-      {showConfirmDelete && (
-        <DeleteConfirmationModal
-          onConfirm={confirmDelete}
-          onCancel={cancelDelete}
-        />
-      )}
+      {showConfirmDelete && <DeleteConfirmationModal onConfirm={confirmDelete} onCancel={cancelDelete} />}
 
       <div className="invoice-container">
         <div className="invoice-header">
