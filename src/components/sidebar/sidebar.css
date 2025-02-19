@@ -133,3 +133,8 @@ button {
   background: rgba(217, 83, 79, 0.2);
   color: #a94442;
 }
+
+.nav-button.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
