@@ -33,7 +33,7 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({
           <div className="client-email">{client.email}</div>
         </div>
       </div>
-      <div className="invoice-item">{invoiceId}</div>
+      <div className="invoice-item inv-num">{invoiceId}</div>
       <div className="invoice-item">{new Date(dueDate).toLocaleDateString()}</div>
       <div className="invoice-item">
         ${subTotal ? subTotal.toFixed(2) : "0.00"}

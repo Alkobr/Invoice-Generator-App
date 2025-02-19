@@ -26,9 +26,7 @@ const Navbar: React.FC = () => {
       <div className="navbar-left">
         <h3 className="TextStyle">{getTitle()}</h3>
       </div>
-      <div className="navbar-right">
-        <img src={AppIcon} alt="App Icon" className="logo" />
-      </div>
+      
     </nav>
   );
 };
