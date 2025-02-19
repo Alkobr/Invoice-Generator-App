@@ -15,6 +15,7 @@ import EditInvoice from "./screen/editInvoice";
 
 const App = () => {
   const { state, dispatch } = useUserContext();
+  // localStorage.clear();
 
   const handleLogout = () => {
     dispatch({ type: "LOGOUT" });

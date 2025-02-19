@@ -91,6 +91,10 @@ const CreateInvoice = () => {
   };
 
   const handleSubmit = () => {
+    if (!clientDetails.name || listItems.length === 0) {
+      alert("Please fill in all required fields and add at least one item.");
+      return;
+    }
     const newInvoice = {
       ...invoiceDetails,
       items: listItems,
@@ -125,6 +129,21 @@ const CreateInvoice = () => {
     
     dispatch({ type: "ADD_INVOICE", payload: newInvoice });
     dispatch({ type: "SET_CURRENT_INVOICE", payload: newInvoice });
+    setClientDetails({ name: "", email: "", phone: "", address: "" });
+    setListItems([]);
+    setInvoiceDetails({
+      invoiceId: generateInvoiceNumber(),
+      issueDate: new Date().toISOString().split("T")[0],
+      dueDate: "",
+      status: true,
+      paymentMethod: "",
+      items: [],
+      subTotal: 0,
+      tax: 0,
+      discount: 0,
+      client: { name: "", email: "", phone: "", address: "" },
+    });
+    
   };
 
 

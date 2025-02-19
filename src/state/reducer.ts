@@ -1,6 +1,6 @@
 import { Action, IState } from "../types";
 
-const reducer = (state:IState, action:Action) => {
+const reducer = (state: IState, action: Action) => {
   switch (action.type) {
     case "STORE_LOCAL_STORAGE":
       return { ...state, users: action.payload };
@@ -13,27 +13,34 @@ const reducer = (state:IState, action:Action) => {
 
     case "LOGOUT": {
       if (!state.loggedInUser) return state;
-      
+
       const updatedUsers = state.users.map(user =>
         user.email === state.loggedInUser?.email
-          ? { ...user, invoices: [...user.invoices, ...(state.loggedInUser.invoices || [])] }
+          ? {
+            ...user,
+            invoices: state.loggedInUser.invoices,
+          }
           : user
       );
-      
+
       return { ...state, loggedInUser: null, users: updatedUsers };
     }
 
     case "ADD_INVOICE": {
       if (!state.loggedInUser) return state;
-      
+
       const updatedUser = {
         ...state.loggedInUser,
         invoices: Array.isArray(state.loggedInUser.invoices)
           ? [...state.loggedInUser.invoices, action.payload]
           : [action.payload],
       };
-      
-      return { ...state, loggedInUser: updatedUser };
+
+      const updatedUsers = state.users.map(user =>
+        user.email === updatedUser.email ? updatedUser : user
+      );
+
+      return { ...state, loggedInUser: updatedUser, users: updatedUsers };
     }
 
     case "SET_CURRENT_INVOICE": {
@@ -46,15 +53,34 @@ const reducer = (state:IState, action:Action) => {
 
     case "UPDATE_INVOICE": {
       if (!state.loggedInUser || !state.loggedInUser.invoices) return state;
-    
+
       const updatedInvoices = state.loggedInUser.invoices.map(invoice =>
         invoice.invoiceId === action.payload.invoiceId ? action.payload : invoice
       );
-    
-      return {
-        ...state,
-        loggedInUser: { ...state.loggedInUser, invoices: updatedInvoices },
-      };
+
+      const updatedUser = { ...state.loggedInUser, invoices: updatedInvoices };
+
+      const updatedUsers = state.users.map(user =>
+        user.email === updatedUser.email ? updatedUser : user
+      );
+
+      return { ...state, loggedInUser: updatedUser, users: updatedUsers };
+    }
+
+    case "DELETE_INVOICE": {
+      if (!state.loggedInUser || !state.loggedInUser.invoices) return state;
+
+      const updatedInvoices = state.loggedInUser.invoices.filter(
+        invoice => invoice.invoiceId !== action.payload.invoiceId
+      );
+
+      const updatedUser = { ...state.loggedInUser, invoices: updatedInvoices };
+
+      const updatedUsers = state.users.map(user =>
+        user.email === updatedUser.email ? updatedUser : user
+      );
+
+      return { ...state, loggedInUser: updatedUser, users: updatedUsers };
     }
 
     default:

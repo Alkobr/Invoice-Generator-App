@@ -1,13 +1,10 @@
+
 import React from 'react';
 import { FaSearch } from 'react-icons/fa';
 import './searchBar.css';
-interface SearchBarProps {
-  searchQuery: string;
-  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  search: (query: string) => void;  
-}
+import { SearchBarProps } from '../../types';
 
-const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, setSearchQuery, search }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, setSearchQuery }) => {
   return (
     <div className="search-bar">
       <FaSearch className="icon" />
@@ -15,10 +12,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, setSearchQuery, sear
         type="text"
         placeholder="Search invoices"
         value={searchQuery}
-        onChange={(e) => {
-          setSearchQuery(e.target.value);
-          search(e.target.value);
-        }}
+        onChange={(e) => setSearchQuery(e.target.value)}
       />
     </div>
   );

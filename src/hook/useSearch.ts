@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { InvoiceCardProps } from "../types";
 
@@ -8,24 +9,17 @@ const useSearch = (initialInvoices: InvoiceCardProps[]) => {
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults(initialInvoices);
+    } else {
+      const filtered = initialInvoices.filter(
+        (invoice) =>
+          invoice.client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          invoice.invoiceId.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setSearchResults(filtered);
     }
-  }, [searchQuery, initialInvoices]);
+  }, [searchQuery, initialInvoices]);  // ✅ البحث يتم تحديثه عند تغيّر البيانات أو النص المُدخل
 
-  const search = (query: string) => {
-    setSearchQuery(query);
-    if (!query.trim()) {
-      setSearchResults(initialInvoices);
-      return;
-    }
-    const filtered = initialInvoices.filter(
-      (invoice) =>
-        invoice.client.name.toLowerCase().includes(query.toLowerCase()) ||
-        invoice.invoiceId.toLowerCase().includes(query.toLowerCase())
-    );
-    setSearchResults(filtered);
-  };
-
-  return { searchQuery, setSearchQuery, searchResults, search };
+  return { searchQuery, setSearchQuery, searchResults };
 };
 
 export default useSearch;

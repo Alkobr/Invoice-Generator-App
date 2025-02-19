@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { InvoiceCardProps } from "../types";
 
+
 const useInvoiceFilter = (initialInvoices: InvoiceCardProps[]) => {
   const [filterType, setFilterType] = useState("");
   const [filterValue, setFilterValue] = useState("");
@@ -49,6 +50,8 @@ const useInvoiceFilter = (initialInvoices: InvoiceCardProps[]) => {
     setFilteredInvoices(filtered.length > 0 ? filtered : initialInvoices);
   };
 
+
+
   return {
     filterType,
     setFilterType,
@@ -62,5 +65,5 @@ const useInvoiceFilter = (initialInvoices: InvoiceCardProps[]) => {
     applyFilter,
   };
 };
-
 export default useInvoiceFilter;
+

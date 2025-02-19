@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { IInvoice, InvoiceCardProps } from "../../types";
+
+import { InvoiceCardProps } from "../../types";
 import "./invoiceList.css";
 import { FaFileInvoice, FaFilter } from "react-icons/fa";
 import FilterModal from "../../components/filterModals";
 import DeleteConfirmationModal from "../../components/deleteConfirmationModal";
 import useDelete from "../../hook/useDelete";
-import useInvoiceFilter from "../../hook/useInvoiceFilter";
-import { useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
 import useSearch from "../../hook/useSearch";
+import useInvoiceFilter from "../../hook/useInvoiceFilter";
 import InvoiceCard from "../../components/invoiceCards";
 import SearchBar from "../../components/Search";
+import { useEffect, useState, useMemo } from "react";
+import { IInvoice } from "../../types";
 
 const CardList: React.FC = () => {
   const navigate = useNavigate();
@@ -18,50 +20,45 @@ const CardList: React.FC = () => {
   const getSavedInvoices = (): InvoiceCardProps[] => {
     const savedInvoices = localStorage.getItem("loggedInUser");
     const existingInvoices = savedInvoices ? JSON.parse(savedInvoices) : [];
-    const existingInvoicesValue = existingInvoices?.invoices?.map((invoice:IInvoice) => ({
-      ...invoice,
-      
-    })) || [];
-    return existingInvoicesValue;
+    return existingInvoices?.invoices?.map((invoice: IInvoice) => ({ ...invoice })) || [];
   };
 
-  const [mainInvoiceList, setMainInvoiceList] = useState<InvoiceCardProps[]>(getSavedInvoices);
-  const [invoiceList, setInvoiceList] = useState<InvoiceCardProps[]>(mainInvoiceList);
+  const savedInvoices = useMemo(() => getSavedInvoices(), []);
+  const [mainInvoiceList, setMainInvoiceList] = useState<InvoiceCardProps[]>(savedInvoices);
+  const [invoiceList, setInvoiceList] = useState<InvoiceCardProps[]>(savedInvoices);
 
-  const {
-    invoiceListDelete,
-    handleDelete,
-    confirmDelete,
-    cancelDelete,
-    showConfirmDelete,
-  } = useDelete(invoiceList);
-console.log(mainInvoiceList);
+  const { handleDelete, confirmDelete, cancelDelete, showConfirmDelete, deletedInvoice } = useDelete();
+  const { filterType, setFilterType, filterValue, setFilterValue, filterStatus, setFilterStatus, filteredInvoices, applyFilter } = useInvoiceFilter(mainInvoiceList);
+  const { searchQuery, setSearchQuery, searchResults } = useSearch(mainInvoiceList);
 
-  const {
-    filterType,
-    setFilterType,
-    filterValue,
-    setFilterValue,
-    filterStatus,
-    setFilterStatus,
-    filteredInvoices,
-    applyFilter,
-  } = useInvoiceFilter(mainInvoiceList);
+useEffect(() => {
+  setInvoiceList(searchResults);
+}, [searchResults]);
 
-  const { searchQuery, setSearchQuery, searchResults, search } = useSearch(mainInvoiceList);
+  
+  useEffect(() => {
+    const savedInvoices = localStorage.getItem("loggedInUser");
+    if (savedInvoices) {
+      const userData = JSON.parse(savedInvoices);
+      userData.invoices = mainInvoiceList;
+      localStorage.setItem("loggedInUser", JSON.stringify(userData));
+    }
+  }, [mainInvoiceList]);
 
   useEffect(() => {
-    setInvoiceList(invoiceListDelete);
-    setMainInvoiceList(invoiceListDelete);
-  }, [invoiceListDelete]);
-
+    if (deletedInvoice) {
+      const updatedMainList = mainInvoiceList.filter(invoice => invoice.invoiceId !== deletedInvoice.invoiceId);
+      const List = filteredInvoices.filter(invoice => invoice.invoiceId !== deletedInvoice.invoiceId);
+      setMainInvoiceList(updatedMainList);  
+      setInvoiceList(List);
+    }
+  }, [deletedInvoice]);
+  
+  
+  
   useEffect(() => {
     setInvoiceList(filteredInvoices);
   }, [filteredInvoices]);
-
-  useEffect(() => {
-    setInvoiceList(searchQuery.trim() ? searchResults : mainInvoiceList);
-  }, [searchResults, searchQuery, mainInvoiceList]);
 
   const handleCreateInvoice = () => {
     navigate("/CreateInvoice");
@@ -72,20 +69,28 @@ console.log(mainInvoiceList);
     setShowFilter(false);
   };
 
-  const handleDeleteInvoice = (invoice: InvoiceCardProps) => {
-    handleDelete(invoice);
+  const handleShowAll = () => {
+    setSearchQuery('');
+    setFilterType('');
+    setFilterValue('');
+    setFilterStatus({ paid: false, unpaid: false });
+    setInvoiceList(mainInvoiceList);
   };
 
   return (
     <div className="AllInvoices">
       <div className="containerr">
-        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} search={search} />
+      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+
         <div className="buttons">
           <button className="create-invoice" onClick={handleCreateInvoice}>
             <FaFileInvoice className="icon" /> Create Invoice
           </button>
           <button className="filter" onClick={() => setShowFilter(!showFilter)}>
             <FaFilter className="icon" /> Filters
+          </button>
+          <button className="all-invoices" onClick={handleShowAll} style={{color:'#6a1b9a',fontWeight:'bolder'}}>
+            All Invoices
           </button>
         </div>
       </div>
@@ -119,7 +124,7 @@ console.log(mainInvoiceList);
             <InvoiceCard
               key={invoice.invoiceId}
               {...invoice}
-              onDelete={() => handleDeleteInvoice(invoice)}
+              onDelete={() => handleDelete(invoice)}
               onEdit={handleCreateInvoice}
             />
           ))}

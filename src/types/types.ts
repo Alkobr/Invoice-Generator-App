@@ -13,9 +13,9 @@ export type IInvoice = {
   status: boolean;
   paymentMethod: string;
   items: TableRow[];
-  subTotal:number;
-  discount:number;
-  tax:number;
+  subTotal: number;
+  discount: number;
+  tax: number;
   client: IClient;
 };
 
@@ -36,7 +36,8 @@ export type Action =
   | { type: "LOGOUT" }
   | { type: "ADD_INVOICE"; payload: IInvoice }
   | { type: "SET_CURRENT_INVOICE"; payload: IInvoice | null }
-  | { type: "UPDATE_INVOICE"; payload: IInvoice };
+  | { type: "UPDATE_INVOICE"; payload: IInvoice }
+  | { type: "DELETE_INVOICE"; payload: IInvoice };
 
 export type InputFieldProps = {
   type: string;
@@ -129,4 +130,9 @@ export interface FilterModalProps {
   >;
   applyFilter: () => void;
   closeFilter: () => void;
+}
+
+export interface SearchBarProps {
+  searchQuery: string;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
 }
