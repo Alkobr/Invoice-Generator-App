@@ -61,16 +61,26 @@ const EditInvoice = () => {
       prev ? { ...prev, subTotal: newSubTotal } : null
     );
   };
-
+  const updateInvoiceTotal = (items: TableRow[]) => {
+    const newSubTotal = items.reduce((acc, item) => acc + item.quantity * item.price, 0);
+    setInvoiceDetails(prev => prev ? { ...prev, subTotal: newSubTotal } : null);
+  };
+  
+  
   const handleAddItem = () => {
     const newItem: TableRow = { name: "", quantity: 1, price: 0 };
-    setListItems([...listItems, newItem]);
+    const updatedItems = [...listItems, newItem];
+    setListItems(updatedItems);
+    updateInvoiceTotal(updatedItems);
   };
+  
 
   const handleRemoveItem = (index: number) => {
     const updatedItems = listItems.filter((_, i) => i !== index);
     setListItems(updatedItems);
+    updateInvoiceTotal(updatedItems);
   };
+  
   const calculateTotal = () => {
     const subTotal = invoiceDetails?.subTotal || 0;
     const tax = invoiceDetails?.tax ? (invoiceDetails.tax / 100) * subTotal : 0;
