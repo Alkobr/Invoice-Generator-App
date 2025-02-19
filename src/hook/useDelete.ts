@@ -1,12 +1,15 @@
+
+
 import { useState } from "react";
 import { InvoiceCardProps } from "../types";
+import { useUserContext } from "../provider";
 
-const useDelete = (initialInvoices: InvoiceCardProps[]) => {
-  const [invoiceListDelte, setInvoiceList] = useState(initialInvoices);
+const useDelete = () => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const [invoiceToDelete, setInvoiceToDelete] =
-    useState<InvoiceCardProps | null>(null);
-  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<InvoiceCardProps | null>(null);
+  const [deletedInvoice, setDeletedInvoice] = useState<InvoiceCardProps | null>(null);
+  const { dispatch } = useUserContext();
+
   const handleDelete = (invoice: InvoiceCardProps) => {
     setInvoiceToDelete(invoice);
     setShowConfirmDelete(true);
@@ -14,31 +17,36 @@ const useDelete = (initialInvoices: InvoiceCardProps[]) => {
 
   const confirmDelete = () => {
     if (invoiceToDelete) {
-      setInvoiceList(
-        invoiceListDelte.filter(
-          (i) => i.invoiceNumber !== invoiceToDelete.invoiceNumber
-        )
-      );
+      dispatch({ type: "DELETE_INVOICE", payload: invoiceToDelete });
+      setDeletedInvoice(invoiceToDelete);
       setShowConfirmDelete(false);
       setInvoiceToDelete(null);
-      setIsConfirmed(true);
+
+      const savedInvoices = localStorage.getItem("loggedInUser");
+      if (savedInvoices) {
+        const userData = JSON.parse(savedInvoices);
+        userData.invoices = userData.invoices.filter(
+          (i: InvoiceCardProps) => i.invoiceId !== invoiceToDelete.invoiceId
+        );
+        localStorage.setItem("loggedInUser", JSON.stringify(userData));
+      }
     }
   };
 
   const cancelDelete = () => {
     setShowConfirmDelete(false);
     setInvoiceToDelete(null);
-    setIsConfirmed(false);
   };
 
   return {
-    invoiceListDelte,
     handleDelete,
     confirmDelete,
     cancelDelete,
     showConfirmDelete,
-    isConfirmed,
+    deletedInvoice,
   };
 };
 
 export default useDelete;
+
+

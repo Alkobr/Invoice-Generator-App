@@ -1,21 +1,25 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { InvoiceCardProps } from "../types";
 
 const useSearch = (initialInvoices: InvoiceCardProps[]) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] =
-    useState<InvoiceCardProps[]>(initialInvoices);
+  const [searchResults, setSearchResults] = useState<InvoiceCardProps[]>(initialInvoices);
 
-  const search = (query: string) => {
-    const filtered = initialInvoices.filter(
-      (invoice) =>
-        invoice.clientName.toLowerCase().includes(query.toLowerCase()) ||
-        invoice.invoiceNumber.toLowerCase().includes(query.toLowerCase())
-    );
-    setSearchResults(filtered);
-  };
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults(initialInvoices);
+    } else {
+      const filtered = initialInvoices.filter(
+        (invoice) =>
+          invoice.client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          invoice.invoiceId.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setSearchResults(filtered);
+    }
+  }, [searchQuery, initialInvoices]);  // ✅ البحث يتم تحديثه عند تغيّر البيانات أو النص المُدخل
 
-  return { searchQuery, setSearchQuery, searchResults, search };
+  return { searchQuery, setSearchQuery, searchResults };
 };
 
 export default useSearch;

@@ -11,9 +11,11 @@ import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";
 import CardList from "./screen/invoicesList";
 import { useUserContext } from "./provider";
+import EditInvoice from "./screen/editInvoice";
 
 const App = () => {
   const { state, dispatch } = useUserContext();
+  // localStorage.clear();
 
   const handleLogout = () => {
     dispatch({ type: "LOGOUT" });
@@ -41,6 +43,7 @@ const App = () => {
           path="/CardList"
           element={state.loggedInUser ? <CardList /> : <Navigate to="/Login" />}
         />
+        <Route path="/editInvoice/:id" element={state.loggedInUser ? <EditInvoice />:<Navigate to="/Login" />} />
       </Routes>
     </Router>
   );

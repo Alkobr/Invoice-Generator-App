@@ -1,37 +1,39 @@
 import { useState } from "react";
 import { InvoiceCardProps } from "../types";
 
+
 const useInvoiceFilter = (initialInvoices: InvoiceCardProps[]) => {
   const [filterType, setFilterType] = useState("");
   const [filterValue, setFilterValue] = useState("");
-  const [filterStatus, setFilterStatus] = useState({
-    paid: false,
-    unpaid: false,
-  });
+  const [filterStatus, setFilterStatus] = useState<{ paid: boolean; unpaid: boolean }>({ paid: false, unpaid: false });
   const [filteredInvoices, setFilteredInvoices] = useState(initialInvoices);
   const [searchQuery, setSearchQuery] = useState("");
 
   const applyFilter = () => {
-    let filtered = initialInvoices;
+    let filtered = [...initialInvoices];
 
-    if (filterType === "Status") {
-      filtered = filtered.filter(
-        (invoice) =>
-          (filterStatus.paid && invoice.status.toLowerCase() === "paid") ||
-          (filterStatus.unpaid && invoice.status.toLowerCase() === "unpaid")
-      );
-    } else if (filterType === "Date" && filterValue) {
-      filtered = filtered.filter((invoice) => invoice.date === filterValue);
+    if (filterStatus.paid || filterStatus.unpaid) {
+      filtered = filtered.filter((invoice) => {
+        const isPaid = JSON.parse(invoice.status)
+
+        return (filterStatus.paid && isPaid) || (filterStatus.unpaid && !isPaid);
+      });
+    }
+
+    console.log("Initial Invoices:", initialInvoices);
+    console.log("Filtered Invoices:", filtered);
+    console.log("Filter Status:", filterStatus);
+
+    if (filterType === "Date" && filterValue) {
+      filtered = filtered.filter((invoice) => invoice.dueDate === filterValue);
     } else if (filterType && filterValue) {
       filtered = filtered.filter((invoice) => {
-        if (filterType === "Client Name")
-          return invoice.clientName
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
-        if (filterType === "Invoice Number")
-          return invoice.invoiceNumber
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
+        if (filterType === "Client Name") {
+          return invoice.client.name.toLowerCase().includes(filterValue.toLowerCase());
+        }
+        if (filterType === "Invoice Number") {
+          return invoice.invoiceId.toLowerCase().includes(filterValue.toLowerCase());
+        }
         return false;
       });
     }
@@ -39,18 +41,16 @@ const useInvoiceFilter = (initialInvoices: InvoiceCardProps[]) => {
     if (searchQuery.trim().length > 0) {
       filtered = filtered.filter(
         (invoice) =>
-          invoice.clientName
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          invoice.invoiceNumber
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          invoice.status.toLowerCase().includes(searchQuery.toLowerCase())
+          invoice.client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          invoice.invoiceId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (invoice.status ? "paid" : "unpaid").includes(searchQuery.toLowerCase())
       );
     }
 
-    setFilteredInvoices(filtered);
+    setFilteredInvoices(filtered.length > 0 ? filtered : initialInvoices);
   };
+
+
 
   return {
     filterType,
@@ -65,5 +65,5 @@ const useInvoiceFilter = (initialInvoices: InvoiceCardProps[]) => {
     applyFilter,
   };
 };
-
 export default useInvoiceFilter;
+

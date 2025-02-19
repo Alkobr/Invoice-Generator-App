@@ -1,18 +1,25 @@
 import CustomButton from "../../components/customButton";
 import PreviewInvoice from "../../components/previewInvoice";
-import "./createInvoice.css";
-import { useRef, useState } from "react";
+import "../createInvoice/createInvoice.css";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import preview from "../../assets/eye.png";
 import download from "../../assets/download.png";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import OrderTable from "../../components/Table";
-import { useUserContext } from "../../provider";
-import { IClient, IInvoice, IUser, TableRow } from "../../types";
 import Save from "../../assets/Save.png"
-const CreateInvoice = () => {
-  const previewRef = useRef<HTMLDivElement>(null);
 
+import { useUserContext } from "../../provider";
+import { IClient, IInvoice, TableRow } from "../../types";
+
+const EditInvoice = () => {
+  const { id } = useParams();
+  const previewRef = useRef(null);
+  const [isTaxInputVisible, setIsTaxInputVisible] = useState(false);
+  const [isDiscountInputVisible, setIsDiscountInputVisible] = useState(false);
+
+  const { state, dispatch } = useUserContext();
   const [isOpen, setIsOpen] = useState(false);
   const [listItems, setListItems] = useState<TableRow[]>([]);
   const [clientDetails, setClientDetails] = useState<IClient>({
@@ -21,132 +28,94 @@ const CreateInvoice = () => {
     phone: "",
     address: "",
   });
-  const { state, dispatch } = useUserContext();
-  const [isTaxInputVisible, setIsTaxInputVisible] = useState(false);
-  const [isDiscountInputVisible, setIsDiscountInputVisible] = useState(false);
+  const [invoiceDetails, setInvoiceDetails] = useState<IInvoice | null>(null);
+  useEffect(() => {
+    const storedInvoices = localStorage.getItem("loggedInUser");
+    const invoices = storedInvoices ? JSON.parse(storedInvoices) : [];
+    const existingInvoicesValue = invoices?.invoices || [];
+    const foundInvoice = existingInvoicesValue.find((inv: IInvoice) => inv.invoiceId === id);
+    if (foundInvoice) {
+      setInvoiceDetails(foundInvoice);
+      setClientDetails(foundInvoice.client);
+      setListItems(foundInvoice.items);
+    }
+  }, [id]);
+
+
+  if (!invoiceDetails) return <p>Invoice not found.</p>;
 
   const user = state.loggedInUser;
   if (!user) return <p>Please log in to create an invoice.</p>;
 
-  const generateInvoiceNumber = () =>
-    `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-  const [invoiceDetails, setInvoiceDetails] = useState<IInvoice>({
-    invoiceId: generateInvoiceNumber(),
-    issueDate: new Date().toISOString().split("T")[0],
-    dueDate: "",
-    status: true,
-    paymentMethod: "",
-    items: [],
-    subTotal: 0,
-    tax: 0,
-    discount: 0,
-    client: clientDetails,
-  });
-
-  const updateSubTotal = (items: TableRow[]) => {
-    const newSubTotal = items.reduce(
-      (sum, row) => sum + row.price * row.quantity,
-      0
-    );
-    setInvoiceDetails((prev) => ({ ...prev, subTotal: newSubTotal }));
-  };
-
-  const handleInvoiceChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setInvoiceDetails((prev) => ({
-      ...prev,
-      [name]:
-        name === "tax" || name === "discount" ? Number(value) || 0 : value,
-    }));
-  };
-
-  const handleItemChange = (
-    index: number,
-    field: keyof TableRow,
-    value: string | number
-  ) => {
+  const handleItemChange = (index, field: string, value:any) => {
     const updatedItems = [...listItems];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
+
+    const newSubTotal = updatedItems.reduce(
+      (acc, item) => acc + item.quantity * item.price,
+      0
+    );
+
     setListItems(updatedItems);
-    updateSubTotal(updatedItems);
+    setInvoiceDetails((prev) =>
+      prev ? { ...prev, subTotal: newSubTotal } : null
+    );
+  };
+  const updateInvoiceTotal = (items: TableRow[]) => {
+    const newSubTotal = items.reduce((acc, item) => acc + item.quantity * item.price, 0);
+    setInvoiceDetails(prev => prev ? { ...prev, subTotal: newSubTotal } : null);
+  };
+  
+  
+  const handleAddItem = () => {
+    const newItem: TableRow = { name: "", quantity: 1, price: 0 };
+    const updatedItems = [...listItems, newItem];
+    setListItems(updatedItems);
+    updateInvoiceTotal(updatedItems);
+  };
+  
+
+  const handleRemoveItem = (index: number) => {
+    const updatedItems = listItems.filter((_, i) => i !== index);
+    setListItems(updatedItems);
+    updateInvoiceTotal(updatedItems);
+  };
+  
+  const calculateTotal = () => {
+    const subTotal = invoiceDetails?.subTotal || 0;
+    const tax = invoiceDetails?.tax ? (invoiceDetails.tax / 100) * subTotal : 0;
+    const discount = invoiceDetails?.discount
+      ? (invoiceDetails.discount / 100) * subTotal
+      : 0;
+    return subTotal + tax - discount;
+    console.log(subTotal);
   };
 
-  const addItem = () => {
-    const newItems = [...listItems, { name: "", price: 0, quantity: 1 }];
-    setListItems(newItems);
-    updateSubTotal(newItems);
-  };
-
-  const removeItem = (index: number) => {
-    const newItems = listItems.filter((_, i) => i !== index);
-    setListItems(newItems);
-    updateSubTotal(newItems);
-  };
-
-  const handleClientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleClientChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setClientDetails({ ...clientDetails, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
-    if (!clientDetails.name || listItems.length === 0) {
-      alert("Please fill in all required fields and add at least one item.");
-      return;
-    }
-    const newInvoice = {
-      ...invoiceDetails,
-      items: listItems,
-      client: clientDetails,
-    };
-  
-    
-    const storedUser = localStorage.getItem("loggedInUser");
-    const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
-  
-    if (!loggedInUser) {
-      console.error("No logged-in user found");
-      return;
-    }
-  
-    
-    const storedUsers = localStorage.getItem("users");
-    let users = storedUsers ? JSON.parse(storedUsers) : [];
-  
-    
-    loggedInUser.invoices = Array.isArray(loggedInUser.invoices)
-      ? [...loggedInUser.invoices, newInvoice]
-      : [newInvoice];
-  
-    
-    users = users.map((user:IUser) => user.email === loggedInUser.email ? loggedInUser : user);
-  
-    
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
-  
-    
-    dispatch({ type: "ADD_INVOICE", payload: newInvoice });
-    dispatch({ type: "SET_CURRENT_INVOICE", payload: newInvoice });
-    setClientDetails({ name: "", email: "", phone: "", address: "" });
-    setListItems([]);
-    setInvoiceDetails({
-      invoiceId: generateInvoiceNumber(),
-      issueDate: new Date().toISOString().split("T")[0],
-      dueDate: "",
-      status: true,
-      paymentMethod: "",
-      items: [],
-      subTotal: 0,
-      tax: 0,
-      discount: 0,
-      client: { name: "", email: "", phone: "", address: "" },
+  const handleInvoiceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setInvoiceDetails((prev) => {
+      if (!prev) return null;
+      const updatedInvoice = { ...prev, [name]: value };
+      if (name === "tax" || name === "discount") {
+        updatedInvoice.subTotal = calculateTotal();
+      }
+      return updatedInvoice;
     });
-    
   };
-
-
+  const handleSubmit = () => {
+    const updatedInvoice = { ...invoiceDetails, items: listItems, client: clientDetails, subTotal: calculateTotal() };
+    const storedInvoices = localStorage.getItem("savedInvoice");
+    let invoices = storedInvoices ? JSON.parse(storedInvoices) : [];
+    invoices = invoices.map((inv: IInvoice) => (inv.invoiceId === id ? updatedInvoice : inv));
+    localStorage.setItem("savedInvoice", JSON.stringify(invoices));
+    dispatch({ type: "UPDATE_INVOICE", payload: updatedInvoice });
+  };
   const handlePreview = () => {
     setIsOpen(true);
   };
@@ -176,6 +145,8 @@ const CreateInvoice = () => {
     pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
     pdf.save("invoice.pdf");
   };
+
+
   return (
     <div className="wrapper">
       <div className="main">
@@ -309,16 +280,11 @@ const CreateInvoice = () => {
               </div>
             </div>
           </div>
-          <div className="item-details">
-            <div className="item-details2">Item Details</div>
-            <div className="TextDetails">Details item with more info</div>
-          </div>
-
           <OrderTable
             items={listItems}
             onItemChange={handleItemChange}
-            onAddItem={addItem}
-            onRemoveItem={removeItem}
+            onAddItem={handleAddItem}
+            onRemoveItem={handleRemoveItem}
           />
           <div className="CalculateDivMainCreate">
             <div></div>
@@ -377,7 +343,7 @@ const CreateInvoice = () => {
           </div>
         </div>
       </div>
-      <div className="buttonsCreate">
+      <div>
         <div className="hidden" ref={previewRef}>
           <PreviewInvoice
             user={user}
@@ -406,8 +372,8 @@ const CreateInvoice = () => {
         </div>
         <div className="saveInvoice">
           <CustomButton
-            icon={Save}
-            text="Save Invoice"
+            icon={Save }
+            text="Save Edit"
             onClick={handleSubmit}
           />
         </div>
@@ -429,4 +395,4 @@ const CreateInvoice = () => {
   );
 };
 
-export default CreateInvoice;
+export default EditInvoice;
