@@ -1,16 +1,10 @@
 import { FC, useEffect, useState } from "react";
-
 import { Link, useNavigate } from "react-router-dom";
 import "./sidebar.css";
-import {
-  IoHomeOutline,
-  IoHelpCircleOutline,
-  IoLogOutOutline,
-} from "react-icons/io5";
+import { IoHomeOutline, IoHelpCircleOutline, IoLogOutOutline } from "react-icons/io5";
 import { CiSettings } from "react-icons/ci";
 import { ButtonProps } from "../../types";
 import AppIcon from "../../assets/payInvo.png";
-
 import { useLocation } from "react-router";
 
 const menuItems = [
@@ -19,7 +13,7 @@ const menuItems = [
 ];
 
 const bottomItems = [
-  { name: "Help", icon: IoHelpCircleOutline, path: "/Help" },
+  { name: "Help", icon: IoHelpCircleOutline, path: "/Help", disabled: true },
 ];
 
 const NavHeader = () => (
@@ -28,17 +22,20 @@ const NavHeader = () => (
     <span className="app-name">PayInvo</span>
   </header>
 );
-const NavButton: FC<ButtonProps> = ({
+
+const NavButton: FC<ButtonProps & { disabled?: boolean }> = ({
   to,
   name,
   icon: IconComponent,
   isActive,
   onClick,
+  disabled,
 }) => (
   <Link
-    to={to}
-    className={`nav-button ${isActive ? "active" : ""}`}
-    onClick={() => onClick(name)}
+    to={disabled ? "#" : to}
+    className={`nav-button ${isActive ? "active" : ""} ${disabled ? "disabled" : ""}`}
+    onClick={() => !disabled && onClick(name)}
+    style={{ pointerEvents: disabled ? "none" : "auto", opacity: disabled ? 0.5 : 1 }}
   >
     {IconComponent && <IconComponent className="icon" />}
     <span>{name}</span>
@@ -48,7 +45,6 @@ const NavButton: FC<ButtonProps> = ({
 const Sidebar = ({ onLogout }: { onLogout: () => void }) => {
   const [activeItem, setActiveItem] = useState<string>("");
   const navigate = useNavigate();
-
   const location = useLocation();
 
   useEffect(() => {
@@ -92,6 +88,7 @@ const Sidebar = ({ onLogout }: { onLogout: () => void }) => {
             icon={item.icon}
             isActive={activeItem === item.name}
             onClick={handleClick}
+            disabled={item.disabled}
           />
         ))}
         <button className="nav-button logout-button" onClick={handleLogout}>
