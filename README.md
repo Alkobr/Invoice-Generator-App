@@ -40,11 +40,12 @@ Need to edit an old invoice? No worries! You can modify invoice details such as 
 
 ## Technologies Used
 React: For building a flexible and fast user interface.
-React Router: For navigating between different pages.
-TypeScript: For writing with type safety, making development and maintenance easier.
-Local Storage: To save invoices and their details locally on the device.
-CSS: For designing the user interface in an attractive and professional way.
-PDF.js: To download invoices in PDF format.
+<br>
+React Router: For navigating between different pages.<br>
+TypeScript: For writing with type safety, making development and maintenance easier.<br>
+Local Storage: To save invoices and their details locally on the device.<br>
+CSS: For designing the user interface in an attractive and professional way.<br>
+PDF.js: To download invoices in PDF format.<br>
 
 ## Setup
 
