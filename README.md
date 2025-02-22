@@ -59,5 +59,5 @@ npm install
 ```
 4-To run the app locally on your device, use the following command:
 ```
-npm start
+npm run dev
 ```
