@@ -47,7 +47,7 @@ const EditInvoice = () => {
   const user = state.loggedInUser;
   if (!user) return <p>Please log in to create an invoice.</p>;
 
-  const handleItemChange = (index, field: string, value:any) => {
+  const handleItemChange = (index:any, field: string, value:any) => {
     const updatedItems = [...listItems];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
 

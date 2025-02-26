@@ -14,7 +14,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { state, dispatch } = useUserContext();
 
-  const [user, setUser] = useState<IUser>({ email: "", password: "", name: "", phone: "", address: "" });
+  const [user, setUser] = useState<IUser>({ email: "", password: "", name: "", phone: "", address: "" , invoices: [] });
   const [errors, setErrors] = useState({ emailError: "", passwordError: "" });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

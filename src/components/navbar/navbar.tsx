@@ -1,6 +1,5 @@
 import React from "react";
 import "./navbar.css";
-import AppIcon from "../../assets/PayInvo.png";
 import { useLocation } from "react-router-dom";
 
 const Navbar: React.FC = () => {
